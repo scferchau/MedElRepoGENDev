@@ -14,6 +14,7 @@
 - Create MVP base branches with the pattern `feature_MSMVP<Number>_{lib|app}/main`
 - Create WP feature branches based on the corresponding MVP base branch with the pattern `feature_MSMVP<Number>_{lib|app}/feature_MSWP<Number>_{lib|app}`
 - Use `lib` when the repo name ends with `Lib`; otherwise use `app`
+- When creating new feature branches, initially create them only locally. A push will occur later manually or targeted to a corresponding new branch on origin.
 
 ## Versioning
 
@@ -77,23 +78,65 @@ namespace SampleNamespace
 
 ### Testing
 
-- MSTest to write unit and integration tests (use [TestClass], [TestMethod], [TestInitialize], [TestCleanup], [ClassInitialize], [ClassCleanup]))
-- Put unit tests in subprojects UnitTestMSLibst and integration tests in IntegrationTestMSLibs
+- Use MSTest to write unit and integration tests (use `[TestClass]`, `[TestMethod]`, `[TestInitialize]`, `[TestCleanup]`, `[ClassInitialize]`, `[ClassCleanup]`))
+- Put unit tests in subprojects UnitTestMSLibs and integration tests in IntegrationTestMSLibs
 - Naming convention: 
 	- For test classes: prefix "UnitTest" or "IntegrationTest" followed by the name of the class being tested
 	- The class name of the unit test shall be a concatenation of `UnitTest`, `<Name of Library-Type>`, `<Class to test>`, e.g.: `UnitTestMSLibLogConsole`
 	- If a file with the same name already exists, add the test method there in the public methods section
 - Put the unit tests in a folder named after the project being tested, e.g. UnitTestMSLibs/MyProject
 - The method names shall be lowerCamelCase and like `<method to be tested>_<context>_<expected result>`, e.g. `dataObjectByName_returnDODataObjectFromDataObjectPool_sameAsExpected`
-- Each test should contain commented section (even if empty) like this:
+- The following block shall always be defined in a test class even if the methods are not used:
+```Csharp
+// === public methods - test framework methods
+
+/// <summary>
+/// Set up the class before any test methods are executed.
+/// </summary>
+/// <param name="testContext">The context information for the test.</param>
+[ClassInitialize]
+public static void setUpClass(TestContext testContext)
+{
+    // Class setup code if needed
+}
+
+/// <summary>
+/// Sets up the test environment before each test method is executed.
+/// </summary>
+[TestInitialize]
+public void setUp()
+{
+    // Test setup code if needed
+}
+
+/// <summary>
+/// Executes the cleanup code after each test method is executed.
+/// </summary>
+[TestCleanup]
+public void tearDown()
+{
+    // Test cleanup code if needed
+}
+
+/// <summary>
+/// Executes cleanup logic after all the test methods of the test class have been executed.
+/// </summary>
+[ClassCleanup]
+public static void tearDownClass()
+{
+    // Class cleanup code if needed
+}
 ```
+- The actual test methods shall be begin with a block comment follow by a newline: `// === public methods - test methods`	
+- Each test should contain commented sections (even if empty) like this:
+```Csharp
 // --- set up
 
 <setup logic>
 
 // --- execute
 
-<execution of the method(s) under test
+<execution of the method(s) under test>
 
 // --- verify
 
@@ -104,33 +147,8 @@ namespace SampleNamespace
 <individual tear down logic>
 ```
 - Assert statements shall only be in the `--- verify` block
-- The following methods shall always be defined in this class even if they are not used:
-```Csharp
-// this method sets up the SUT before the test suite is executed
-[ClassInitialize]
-public static void setUpClass(TestContext testContext)
-{
-}
-// this method sets up the SUT before each test is executed
-[TestInitialize]
-public void setUp()
-{
-}
-
-// this method tears down the SUT after the execution of each test
-[TestCleanup]
-public void tearDown()
-{
-}
-
-// this method tears down the SUT after each test was executed
-[ClassCleanup]
-public static void tearDownClass()
-{
-}
-```
 - To make internals visible to test classes, annotate the mandatory class `AssemblyDescription.cs` in each project, e.g. like that:
-```
+```Csharp
 [assembly: InternalsVisibleTo("IntegrationTestAMSSysMSApps")]
 [assembly: InternalsVisibleTo("UnitTestAMSSysMSApps")]
 namespace AMSSysCentralMSAppLib
